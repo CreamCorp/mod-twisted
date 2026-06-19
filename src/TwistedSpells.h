@@ -1,0 +1,6 @@
+#ifndef TWISTED_SPELLS_H
+#define TWISTED_SPELLS_H
+
+
+
+#endif // TWISTED_SPELLS_H
