@@ -28,7 +28,7 @@ namespace twisted
 
     void TwistedPlayer::OnPlayerLogout(Player* player)
     {
-        sData.PlayerFieldBinds.erase(player->GetGUID())
+        sData.PlayerFieldBinds.erase(player->GetGUID());
     }
 
     TownPortal::TownPortal() : GameObjectScript("TownPortal")
@@ -42,8 +42,8 @@ namespace twisted
         uint32 areaId = player->GetAreaId();
         sData.SetFieldbind(player->GetGUID(), homeLoc, areaId);
 
-        player->CastCustomSpell(SpellIds.PortalFx, CustomSpellValues(), player, TRIGGERED_NONE);
-        player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->m_homebindO);
+        player->CastCustomSpell(SpellIds::PortalFx, CustomSpellValues(), player, TRIGGERED_NONE);
+        player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, 0);
 
         return true;
     }
@@ -63,7 +63,7 @@ namespace twisted
 
         const FieldBind& bind = iter->second;
 
-        player->CastCustomSpell(SpellIds.PortalFx, CustomSpellValues(), player, TRIGGERED_NONE);
+        player->CastCustomSpell(SpellIds::PortalFx, CustomSpellValues(), player, TRIGGERED_NONE);
         player->TeleportTo(bind.MapId, bind.X, bind.Y, bind.Z, bind.O);
 
         return true;

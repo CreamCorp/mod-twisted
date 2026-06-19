@@ -11,6 +11,7 @@ namespace twisted
 
     struct FieldBind
     {
+    public:
         uint32 MapId;
         uint16 AreaId;
         float X;
@@ -21,6 +22,7 @@ namespace twisted
 
     class static_data
     {
+    public:
         std::map<ObjectGuid, FieldBind> PlayerFieldBinds;
 
         void SetFieldbind(ObjectGuid guid, WorldLocation const& loc, uint32 areaId);
@@ -28,6 +30,7 @@ namespace twisted
 
     class TwistedPlayer : public PlayerScript
     {
+    public:
         TwistedPlayer();
 
         void OnPlayerLogout(Player* player) override;

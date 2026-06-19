@@ -1,6 +1,6 @@
 void AddTwistedScripts();
 
-void Addmod_twisted_moduleScripts()
+void Addmod_twistedScripts()
 {
     AddTwistedScripts();
 }
