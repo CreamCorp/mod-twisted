@@ -4,6 +4,7 @@
 #include "Position.h"
 #include "ObjectGuid.h"
 #include <map>
+#include <vector>
 
 class GameObject;
 class GameObjectTemplate;
@@ -58,6 +59,8 @@ public:
     std::map<ObjectGuid, ObjectGuid>& GetPlayerPortals() { return PlayerPortals; }
     std::map<uint32, ObjectGuid>& GetAreaPortals() { return AreaPortals; }
 
+    const std::vector<uint32>& GetItemImbueEnchantments() const { return ItemImbueEnchantments; }
+
 private:
     TwistedPlayerData* GetOrFindPlayerData(ObjectGuid guid);
 
@@ -65,6 +68,7 @@ private:
     std::map<ObjectGuid, FieldBind> PlayerFieldBinds;
     std::map<ObjectGuid, ObjectGuid> PlayerPortals;
     std::map<uint32, ObjectGuid> AreaPortals;
+    std::vector<uint32> ItemImbueEnchantments;
 
     uint32 TownPortalObject = 0;
     uint32 ReturnPortalObject = 0;

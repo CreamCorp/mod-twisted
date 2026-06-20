@@ -15,3 +15,11 @@
 #
 
 Twisted.Enable = 0
+
+Twisted.TownPortalId = 250000
+Twisted.ReturnPortalId = 250001
+Twisted.TownPortalSeconds = 300
+Twisted.ReturnPortalSeconds = 600
+
+Twisted.Treasuress.Enable = 1
+Twisted.ImbueItem.Tier1.EnchantIds = 3894,3899,911

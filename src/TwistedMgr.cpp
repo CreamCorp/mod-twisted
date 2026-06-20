@@ -3,9 +3,10 @@
 #include "ScriptMgr.h"
 #include "TwistedMgr.h"
 
-#include "TownPortal.h"
+#include "TwistedConfig.h"
 #include "TwistedSpells.h"
 #include "TwistedPlayer.h"
+#include "TownPortal.h"
 #include <MapMgr.h>
 
 TwistedMgr* TwistedMgr::Get()
@@ -159,6 +160,7 @@ GameObject* TwistedMgr::SpawnGameObject(ObjectGuid::LowType guidlow, GameObjectT
 
 void AddTwistedScripts()
 {
+    new TwistedConfig();
     new TwistedPlayer();
     new TownPortal();
     new FieldPortal();

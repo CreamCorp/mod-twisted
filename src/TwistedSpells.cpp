@@ -1,5 +1,6 @@
 #include "ObjectMgr.h"
 #include "Player.h"
+#include "Item.h"
 #include "SpellScript.h"
 #include "SpellScriptLoader.h"
 #include "SpellAuraEffects.h"
@@ -7,6 +8,7 @@
 #include "TwistedMgr.h"
 #include "TownPortal.h"
 #include "MapMgr.h"
+#include "DBCStores.h"
 
 #include "Log.h"
 
@@ -76,8 +78,48 @@ class TownPortalSpell : public SpellScript
     }
 };
 
+class ImbueItemSpell : public SpellScript
+{
+    PrepareSpellScript(ImbueItemSpell);
+
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        Item* TargetItem = GetHitItem();
+
+        // pick the EnchantId from some configurable tables
+        const std::vector<uint32>& EnchantIds = sTwistedMgr->GetItemImbueEnchantments();
+        uint32 Idx = urand(0, EnchantIds.size());
+        uint32 enchant_id = EnchantIds[Idx];
+        if (!enchant_id)
+            return;
+
+        SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+        if (!pEnchant)
+            return;
+
+        // item can be in trade slot and have owner diff. from caster
+        Player* ItemOwner = TargetItem->GetOwner();
+        if (!ItemOwner)
+            return;
+
+        // remove old enchanting before applying new if equipped
+        ItemOwner->ApplyEnchantment(TargetItem, PERM_ENCHANTMENT_SLOT, false);
+
+        TargetItem->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchant_id, 0, 0, GetCaster()->GetGUID());
+
+        // add new enchanting if equipped
+        ItemOwner->ApplyEnchantment(TargetItem, PERM_ENCHANTMENT_SLOT, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(ImbueItemSpell::HandleHit, EFFECT_0, SPELL_EFFECT_ENCHANT_ITEM);
+    }
+};
+
 void AddTwistedSpellScripts()
 {
     RegisterSpellScript(TreasureFindSpell);
     RegisterSpellScript(TownPortalSpell);
+    RegisterSpellScript(ImbueItemSpell);
 }
