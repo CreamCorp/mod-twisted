@@ -12,5 +12,5 @@ TwistedPlayer::TwistedPlayer() : PlayerScript("TwistedPlayer",
 
 void TwistedPlayer::OnPlayerLogout(Player* player)
 {
-    sTwistedMgr->PlayerFieldBinds.erase(player->GetGUID());
+    sTwistedMgr->PlayerCleanup(player->GetGUID());
 }

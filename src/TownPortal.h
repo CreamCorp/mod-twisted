@@ -7,6 +7,12 @@
 class Player;
 class GameObject;
 
+enum
+{
+    GO_TOWN_PORTAL      = 250000,
+    GO_RETURN_PORTAL    = 250001
+};
+
 class TownPortal : public GameObjectScript
 {
 public:
@@ -21,15 +27,6 @@ public:
     FieldPortal();
 
     bool OnGossipHello(Player* player, GameObject* go) override;
-};
-
-class TownPortalSpell : public SpellScript
-{
-public:
-    PrepareSpellScript(TownPortalSpell);
-
-    void HandleCast();
-    void Register() override;
 };
 
 #endif // TOWN_PORTAL_H

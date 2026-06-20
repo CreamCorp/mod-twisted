@@ -27,8 +27,8 @@ FieldPortal::FieldPortal() : GameObjectScript("FieldPortal")
 
 bool FieldPortal::OnGossipHello(Player* player, GameObject* go)
 {
-    auto iter = sTwistedMgr->PlayerFieldBinds.find(player->GetGUID());
-    if (iter == sTwistedMgr->PlayerFieldBinds.end())
+    auto iter = sTwistedMgr->GetPlayerFieldBinds().find(player->GetGUID());
+    if (iter == sTwistedMgr->GetPlayerFieldBinds().end())
     {
         return false;
     }
@@ -39,15 +39,4 @@ bool FieldPortal::OnGossipHello(Player* player, GameObject* go)
     player->TeleportTo(bind.MapId, bind.X, bind.Y, bind.Z, bind.O);
 
     return true;
-}
-
-void TownPortalSpell::HandleCast()
-{
-    // Player cast a town portal, we need to spawn (or replace) their Portal.
-    // Then we need to refresh the field portal near their innkeeper
-}
-
-void TownPortalSpell::Register()
-{
-    AfterCast += SpellCastFn(TownPortalSpell::HandleCast);
 }
