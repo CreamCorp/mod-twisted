@@ -9,9 +9,12 @@ public:
     TwistedConfig();
 
     void OnBeforeConfigLoad(bool /*reload*/) override;
+    void OnShutdown() override;
 
 private:
     void LoadConfig();
+    void LoadImbueEnchantments();
+    void LoadImbueEnchantmentTiers();
 };
 
 #endif // TWISTED_CONFIG_H

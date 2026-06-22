@@ -1,25 +1,54 @@
-#
-# Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license: https://github.com/azerothcore/azerothcore-wotlk/blob/master/LICENSE-AGPL3
-#
-
 [worldserver]
 
 ########################################
-# Twisted Items configuration
+# Treasure Find
 ########################################
 #
-#    TwistedItems.Enable
-#        Description: Enable the Twisted Items capability
+#    TwistedItems.Treasures.Enable
+#        Description: Enable the Treasure Find system
 #        Default:     0 - Disabled
 #                     1 - Enabled
 #
 
-Twisted.Enable = 0
+Twisted.Treasures.Enable = 1
 
-Twisted.TownPortalId = 250000
-Twisted.ReturnPortalId = 250001
-Twisted.TownPortalSeconds = 300
-Twisted.ReturnPortalSeconds = 600
+########################################
+# Item Imbue
+########################################
+#
+#    TwistedItems.ItemImbue.Enable
+#        Description: Enable the Item Imbue system
+#        Default:     0 - Disabled
+#                     1 - Enabled
+#
+#    Twisted.ItemImbue.ArmorUniqueChance
+#    Twisted.ItemImbue.ArmorUniqueEnchantIds
+#        Description: Enchantments that can only appear on armor. The Chance value determines how often imbuing an armor item will result in
+#			an enchantment from this unique list. This list will take priority over a Tier Upgrade, so these enchantments can appear at any item level.
+#
+#    Twisted.ItemImbue.WeaponUniqueChance
+#    Twisted.ItemImbue.WeaponUniqueEnchantIds
+#        Description: Enchantments that can only appear on weapons. The Chance value determines how often imbuing a weapon item will result in
+#			an enchantment from this unique list. This list will take priority over a Tier Upgrade, so these enchantments can appear at any item level.
+#
+#    Twisted.ItemImbue.UpgradeChance
+#        Description: Defines the chance that any given Imbue will result in an upgrade to the next tier.
+#
+#    Twisted.ItemImbue.NumTiers
+#    Twisted.ItemImbue.Tier#.ItemIds
+#    Twisted.ItemImbue.Tier#.EnchantIds
+#        Description: Defines the number of Tiers of enchantments that exist.
+#			ItemIds define the source items that grant this tier of enchantment.
+#			EnchantIds is the list of entries in SpellItemEnchantment.dbc that will be placed on the target item.
+#			You can add more tiers by increasing NumTiers and duplicate the the two id fields.
+#
 
-Twisted.Treasuress.Enable = 1
-Twisted.ImbueItem.Tier1.EnchantIds = 3894,3899,911
+Twisted.ItemImbue.Enable = 1
+Twisted.ItemImbue.ArmorUniqueChance = 25.0
+Twisted.ItemImbue.ArmorUniqueEnchantIds = 2835,2833,250,1890
+Twisted.ItemImbue.WeaponUniqueChance = 25.0
+Twisted.ItemImbue.WeaponUniqueEnchantIds = 864,1763,2828,2834,3102,3643
+Twisted.ItemImbue.TierUpgradeChance = 10.0
+Twisted.ItemImbue.NumTiers = 1
+Twisted.ItemImbue.Tier1.ItemIds = 60044,60045
+Twisted.ItemImbue.Tier1.EnchantIds = 847,911,1583,2857,3894,3899

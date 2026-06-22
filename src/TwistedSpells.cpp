@@ -6,7 +6,6 @@
 #include "SpellAuraEffects.h"
 #include "TwistedSpells.h"
 #include "TwistedMgr.h"
-#include "TownPortal.h"
 #include "MapMgr.h"
 #include "DBCStores.h"
 
@@ -20,14 +19,7 @@ class TreasureFindSpell : public AuraScript
 
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
-        return ValidateSpellInfo({
-            SPELL_TREASURE_FIND_PCT_1,
-            SPELL_TREASURE_FIND_PCT_5,
-            SPELL_TREASURE_FIND_PCT_10,
-            SPELL_TREASURE_FIND_BUFF_1,
-            SPELL_TREASURE_FIND_BUFF_5,
-            SPELL_TREASURE_FIND_BUFF_10,
-        });
+        return sTwistedMgr->GetTreasureFindEnabled();
     }
 
     void HandleOnEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /* mode */)
@@ -51,64 +43,85 @@ class TreasureFindSpell : public AuraScript
     }
 };
 
-class TownPortalSpell : public SpellScript
-{
-    PrepareSpellScript(TownPortalSpell);
-
-    void HandleOnCast()
-    {
-        Player* player = GetCaster()->ToPlayer();
-        if (!player) return;
-
-        // We've come to an impasse, the homebind is private information in Player.
-        // If we want to continue without engine modifications we will need to rethink the town portal situation.
-        // We could instead create two items:
-        //      Brittle Hearthstone - sets your field pos then returns you to homebind, consumes 1 quantity
-        //      Brittle Skipstone - returns you to the field pos, consumes 1 quantity
-
-        if (GameObjectTemplate const* info = sObjectMgr->GetGameObjectTemplate(GO_TOWN_PORTAL))
-        {
-            GameObject* pObj = sTwistedMgr->ObtainTownPortal(info, player);
-        }
-    }
-
-    void Register() override
-    {
-        OnCast += SpellCastFn(TownPortalSpell::HandleOnCast);
-    }
-};
-
 class ImbueItemSpell : public SpellScript
 {
     PrepareSpellScript(ImbueItemSpell);
 
+    void ApplyEnchantment(Item* Target, Player* Owner, uint32 EnchantId)
+    {
+        Owner->ApplyEnchantment(Target, PERM_ENCHANTMENT_SLOT, false);
+        Target->SetEnchantment(PERM_ENCHANTMENT_SLOT, EnchantId, 0, 0, GetCaster()->GetGUID());
+        Owner->ApplyEnchantment(Target, PERM_ENCHANTMENT_SLOT, true);
+    }
+
+    uint32 GetEnchantment(const std::vector<uint32>& EnchantList)
+    {
+        const uint32 EnchantIndex = urand(0, EnchantList.size());
+        const uint32 EnchantId = EnchantList[EnchantIndex];
+        return EnchantId;
+    }
+
+    bool UseUniqueWeaponEnchant()
+    {
+        return rand_chance() < sTwistedMgr->GetWeaponUniqueChance();
+    }
+    bool UseUniqueArmorEnchant()
+    {
+        return rand_chance() < sTwistedMgr->GetArmorUniqueChance();
+    }
+    bool UseNextTier()
+    {
+        return rand_chance() < sTwistedMgr->GetTierUpgradeChance();
+    }
+
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
+        if (!sTwistedMgr->GetItemImbueEnabled())
+            return;
+
         Item* TargetItem = GetHitItem();
-
-        // pick the EnchantId from some configurable tables
-        const std::vector<uint32>& EnchantIds = sTwistedMgr->GetItemImbueEnchantments();
-        uint32 Idx = urand(0, EnchantIds.size());
-        uint32 enchant_id = EnchantIds[Idx];
-        if (!enchant_id)
+        const Item* CasterItem = GetCastItem();
+        if (!CasterItem || !TargetItem)
             return;
 
-        SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
-        if (!pEnchant)
-            return;
-
-        // item can be in trade slot and have owner diff. from caster
         Player* ItemOwner = TargetItem->GetOwner();
         if (!ItemOwner)
             return;
 
-        // remove old enchanting before applying new if equipped
-        ItemOwner->ApplyEnchantment(TargetItem, PERM_ENCHANTMENT_SLOT, false);
+        int32 TierIndex = -1;
+        const ItemImbueTierData* TierData = sTwistedMgr->GetItemImbueTier(CasterItem->GetEntry(), TierIndex);
+        if (!TierData)
+            return;
 
-        TargetItem->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchant_id, 0, 0, GetCaster()->GetGUID());
+        const bool bCanUpgrade = TierIndex < sTwistedMgr->GetNumItemImbueTiers() - 1;
+        const ItemTemplate* Template = CasterItem->GetTemplate();
+        const std::vector<uint32>* List = &TierData->EnchantIds;
+        if (Template->IsWeapon() && UseUniqueWeaponEnchant())
+        {
+            List = &sTwistedMgr->GetWeaponUniqueEnchantIds();
+        }
+        else if (!Template->IsWeapon() && UseUniqueWeaponEnchant())
+        {
+            List = &sTwistedMgr->GetWeaponUniqueEnchantIds();
+        }
+        else if (bCanUpgrade && UseNextTier())
+        {
+            TierData = sTwistedMgr->GetItemImbueTier(TierIndex + 1);
+            List = &TierData->EnchantIds;
+        }
 
-        // add new enchanting if equipped
-        ItemOwner->ApplyEnchantment(TargetItem, PERM_ENCHANTMENT_SLOT, true);
+        uint32 EnchantId = GetEnchantment(*List);
+        const uint32 CurrentEnchantId = TargetItem->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
+        if (EnchantId == CurrentEnchantId)
+        {
+            EnchantId = (EnchantId + 1) % List->size();
+        }
+
+        SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(EnchantId);
+        if (!pEnchant)
+            return;
+
+        ApplyEnchantment(TargetItem, ItemOwner, EnchantId);
     }
 
     void Register() override
@@ -120,6 +133,5 @@ class ImbueItemSpell : public SpellScript
 void AddTwistedSpellScripts()
 {
     RegisterSpellScript(TreasureFindSpell);
-    RegisterSpellScript(TownPortalSpell);
     RegisterSpellScript(ImbueItemSpell);
 }
