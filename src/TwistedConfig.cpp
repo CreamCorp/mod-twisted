@@ -38,12 +38,14 @@ void TwistedConfig::OnBeforeConfigLoad(bool /*reload*/)
 void TwistedConfig::OnShutdown()
 {
     sTwistedMgr->EnchantmentTiers.clear();
+    sTwistedMgr->RewardDefinitions.clear();
 }
 
 void TwistedConfig::LoadConfig()
 {
     GET_CONF_VALUE(bool, TreasureFindEnabled, "Twisted.Treasures.Enable", false);
     LoadImbueEnchantments();
+    LoadRewards();
 }
 
 void TwistedConfig::LoadImbueEnchantments()
@@ -60,6 +62,49 @@ void TwistedConfig::LoadImbueEnchantments()
     LoadImbueEnchantmentTiers();
 }
 
+void TwistedConfig::LoadRewards()
+{
+    GET_CONF_VALUE(uint32, NumRewardDefs,               "Twisted.Rewards.NumDefs",                      0);
+    GET_CONF_VALUE(uint32, StartingRewardXP,            "Twisted.Rewards.StartingRewardXP",             0);
+    GET_CONF_VALUE(uint32, RewardGrantThreshold,        "Twisted.Rewards.RewardGrantThreshold",         10000);
+    GET_CONF_VALUE(uint32, LevelUpXP,                   "Twisted.Rewards.LevelUpXP",                    6000);
+    GET_CONF_VALUE(uint32, OnCreatureKillInLevelRangeXP,"Twisted.Rewards.OnCreatureKillInLevelRangeXP", 100);
+    GET_CONF_VALUE(uint32, OnCreatureKillAnyLevelXP,    "Twisted.Rewards.OnCreatureKillAnyLevelXP",     25);
+    GET_CONF_VALUE(uint32, OnQuestTurnInXp,             "Twisted.Rewards.OnQuestTurnInXp",              2350);
+
+    LoadRewardDefinitions();
+}
+
+void TwistedConfig::LoadRewardDefinitions()
+{
+    std::ostringstream sb;
+    const std::string BaseConfStr = "Twisted.Rewards.Def";
+    sTwistedMgr->RewardDefinitions.clear();
+    for (uint32 i = 0; i < sTwistedMgr->NumRewardDefs; ++i)
+    {
+        const uint32 Def = i + 1;
+        RewardDefinition DefData;
+
+        CLR_STREAM(sb)
+        sb << BaseConfStr << Def << ".RewardItemId";
+        DefData.EntryId = sConfigMgr->GetOption<uint32>(sb.str(), 0);
+        if (DefData.EntryId == 0)
+        {
+            LOG_ERROR("module", "Mod-Twisted conf string [{}] had no item entry for Def {}!", sb.str().c_str(), Def);
+        }
+
+        CLR_STREAM(sb)
+        sb << BaseConfStr << Def << ".MinLevel";
+        DefData.MinLevel = sConfigMgr->GetOption<uint32>(sb.str(), 1);
+
+        CLR_STREAM(sb)
+        sb << BaseConfStr << Def << ".MaxLevel";
+        DefData.MaxLevel = sConfigMgr->GetOption<uint32>(sb.str(), 80);
+
+        sTwistedMgr->RewardDefinitions.push_back(DefData);
+    }
+}
+
 void TwistedConfig::LoadImbueEnchantmentTiers()
 {
     std::ostringstream sb;
@@ -74,7 +119,7 @@ void TwistedConfig::LoadImbueEnchantmentTiers()
         ParseConfStringList<uint32>(TierData.ItemIds, sConfigMgr->GetOption<std::string>(sb.str(), ""));
         if (TierData.ItemIds.size() <= 0)
         {
-            LOG_ERROR("Mod-Twisted conf string [%s] had no source items for Tier %d!", sb.str(), Tier);
+            LOG_ERROR("Mod-Twisted conf string [{}] had no source items for Tier {}!", sb.str(), Tier);
         }
 
         CLR_STREAM(sb)
@@ -82,7 +127,7 @@ void TwistedConfig::LoadImbueEnchantmentTiers()
         ParseConfStringList<uint32>(TierData.EnchantIds, sConfigMgr->GetOption<std::string>(sb.str(), ""));
         if (TierData.EnchantIds.size() <= 0)
         {
-            LOG_ERROR("Mod-Twisted conf string [%s] had no enchant ids for Tier %d!", sb.str(), Tier);
+            LOG_ERROR("Mod-Twisted conf string [{}] had no enchant ids for Tier {}!", sb.str(), Tier);
         }
         sTwistedMgr->EnchantmentTiers.push_back(TierData);
     };

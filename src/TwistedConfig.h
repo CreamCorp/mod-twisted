@@ -15,6 +15,8 @@ private:
     void LoadConfig();
     void LoadImbueEnchantments();
     void LoadImbueEnchantmentTiers();
+    void LoadRewards();
+    void LoadRewardDefinitions();
 };
 
 #endif // TWISTED_CONFIG_H

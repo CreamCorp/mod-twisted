@@ -6,28 +6,10 @@
 #include <map>
 #include <vector>
 
-class GameObject;
-class GameObjectTemplate;
+class Creature;
 class Player;
 class Map;
-
-enum SpellIds
-{
-    PortalFx = 36400,
-};
-
-struct FieldBind
-{
-public:
-    FieldBind()
-        : MapId(0), AreaId(0), X(0.0f), Y(0.0f), Z(0.0f), O(0.0f)
-    {
-    }
-
-    uint32 MapId = 0;
-    uint16 AreaId = 0;
-    float X, Y, Z, O = 0.0f;
-};
+class Quest;
 
 // Structure for holding extra data for a player
 struct TwistedPlayerData
@@ -35,10 +17,20 @@ struct TwistedPlayerData
 public:
     TwistedPlayerData()
         : TreasureFindPoints(0)
+        , RewardXP(0)
     {
     }
 
-    int32 TreasureFindPoints = 0;
+    int32  TreasureFindPoints = 0;
+    uint32 RewardXP           = 0;
+};
+
+// Structure for defining a level-gated item reward
+struct RewardDefinition
+{
+    uint32 EntryId   = 0;
+    uint32 MinLevel  = 1;
+    uint32 MaxLevel  = 80;
 };
 
 // Structure for defining the data of an item imbue tier
@@ -58,6 +50,7 @@ class TwistedMgr
 public:
     static TwistedMgr* Get();
 
+    void PlayerInitialize(Player* player);
     void PlayerCleanup(ObjectGuid guid);
 
     bool GetTreasureFindEnabled() const { return TreasureFindEnabled; }
@@ -74,13 +67,18 @@ public:
     const ItemImbueTierData* GetItemImbueTier(uint32 ItemId, int32& outIndex);
     const ItemImbueTierData* GetItemImbueTier(int32 Index);
 
+    void OnPlayerCreatureKill(Player* player, Creature* killed);
+    void OnPlayerCompleteQuest(Player* player, Quest const* quest);
+    void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
+
 private:
     TwistedPlayerData* GetOrFindPlayerData(ObjectGuid guid);
-    GameObject* SpawnGameObject(ObjectGuid::LowType guidlow, GameObjectTemplate const* goinfo, Map* map, const Position& pos, const float orientation, const uint32 phasemask);
+    void TryGrantReward(Player* player, TwistedPlayerData* pData);
 
     // Player Data
     std::map<ObjectGuid, TwistedPlayerData> PlayerData;
 
+    // Treasure Find
     bool TreasureFindEnabled = true;
 
     // Item Imbues
@@ -92,6 +90,16 @@ private:
     float TierUpgradeChance = 0.1f;
     std::vector<uint32> ArmorUniqueEnchantIds;
     std::vector<uint32> WeaponUniqueEnchantIds;
+
+    // Rewards
+    uint32 NumRewardDefs                    = 0;
+    std::vector<RewardDefinition> RewardDefinitions;
+    uint32 StartingRewardXP                 = 0;
+    uint32 RewardGrantThreshold             = 10000;
+    uint32 LevelUpXP                        = 6000;
+    uint32 OnCreatureKillInLevelRangeXP     = 100;
+    uint32 OnCreatureKillAnyLevelXP         = 25;
+    uint32 OnQuestTurnInXp                  = 2350;
 };
 
 #define sTwistedMgr TwistedMgr::Get()

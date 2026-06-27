@@ -7,6 +7,12 @@
 #include "TwistedSpells.h"
 #include "TwistedPlayer.h"
 #include <MapMgr.h>
+#include "Creature.h"
+#include "DatabaseEnv.h"
+#include "Item.h"
+#include "Mail.h"
+#include "ObjectMgr.h"
+#include "QuestDef.h"
 
 TwistedMgr* TwistedMgr::Get()
 {
@@ -14,8 +20,38 @@ TwistedMgr* TwistedMgr::Get()
     return &instance;
 }
 
+void TwistedMgr::PlayerInitialize(Player* player)
+{
+    TwistedPlayerData* pData = GetOrFindPlayerData(player->GetGUID());
+    if (!pData)
+        return;
+
+    QueryResult result = CharacterDatabase.Query(
+        "SELECT guid, rewardxp FROM twisted_playerdata WHERE guid = {}",
+        player->GetGUID().GetCounter());
+
+    if (result)
+    {
+        Field* fields = result->Fetch();
+        pData->RewardXP = fields[1].Get<uint32>();
+    }
+    else
+    {
+        pData->RewardXP = StartingRewardXP;
+    }
+}
+
 void TwistedMgr::PlayerCleanup(ObjectGuid guid)
 {
+    auto entry = PlayerData.find(guid);
+    if (entry != PlayerData.end())
+    {
+        CharacterDatabase.Execute(
+            "REPLACE INTO twisted_playerdata (guid, rewardxp) VALUES ({}, {})",
+            guid.GetCounter(),
+            entry->second.RewardXP);
+    }
+
     PlayerData.erase(guid);
 }
 
@@ -54,6 +90,123 @@ const ItemImbueTierData* TwistedMgr::GetItemImbueTier(int32 Index)
     }
 
     return nullptr;
+}
+
+void TwistedMgr::TryGrantReward(Player* player, TwistedPlayerData* pData)
+{
+    while (pData->RewardXP >= RewardGrantThreshold)
+    {
+        pData->RewardXP -= RewardGrantThreshold;
+
+        const RewardDefinition* FoundDef = nullptr;
+        for (const RewardDefinition& Def : RewardDefinitions)
+        {
+            if (player->GetLevel() >= Def.MinLevel && player->GetLevel() <= Def.MaxLevel)
+            {
+                FoundDef = &Def;
+                break;
+            }
+        }
+
+        if (!FoundDef)
+        {
+            LOG_WARN("module", "Mod-Twisted: No RewardDefinition found for player {} at level {} — skipping grant.",
+                player->GetName().c_str(), player->GetLevel());
+            continue;
+        }
+
+        ItemPosCountVec dest;
+        InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, FoundDef->EntryId, 1);
+        if (msg == EQUIP_ERR_OK)
+        {
+            Item* item = player->StoreNewItem(dest, FoundDef->EntryId, true);
+            if (item)
+                player->SendNewItem(item, 1, true, false, false, true);
+        }
+        else
+        {
+            Item* item = Item::CreateItem(FoundDef->EntryId, 1, player);
+            if (item)
+            {
+                CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+                item->SaveToDB(trans);
+                MailDraft("Treasure Time!", "Your inventory was full when you found a treasure chest.")
+                    .AddItem(item)
+                    .SendMailTo(trans, MailReceiver(player), MailSender(MAIL_NORMAL, player->GetGUID().GetCounter()));
+                CharacterDatabase.CommitTransaction(trans);
+            }
+        }
+    }
+}
+
+void TwistedMgr::OnPlayerCreatureKill(Player* player, Creature* killed)
+{
+    TwistedPlayerData* pData = GetOrFindPlayerData(player->GetGUID());
+    if (!pData)
+        return;
+
+    int32 levelDiff = static_cast<int32>(player->GetLevel()) - static_cast<int32>(killed->GetLevel());
+    if (levelDiff < 0)
+        levelDiff = -levelDiff;
+
+    uint32 gainedXP = 0;
+    if (levelDiff <= 5)
+    {
+        gainedXP = OnCreatureKillInLevelRangeXP;
+        pData->RewardXP += gainedXP;
+    }
+    else
+    {
+        gainedXP = OnCreatureKillAnyLevelXP;
+        pData->RewardXP += gainedXP;
+    }
+
+    uint32 remaining = RewardGrantThreshold > 0
+        ? RewardGrantThreshold - (pData->RewardXP % RewardGrantThreshold)
+        : 0;
+    LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP from creature kill. Total: {}, remaining to next reward: {}",
+        player->GetName().c_str(), gainedXP, pData->RewardXP, remaining);
+
+    TryGrantReward(player, pData);
+}
+
+void TwistedMgr::OnPlayerCompleteQuest(Player* player, Quest const* /*quest*/)
+{
+    TwistedPlayerData* pData = GetOrFindPlayerData(player->GetGUID());
+    if (!pData)
+        return;
+
+    pData->RewardXP += OnQuestTurnInXp;
+
+    uint32 remaining = RewardGrantThreshold > 0
+        ? RewardGrantThreshold - (pData->RewardXP % RewardGrantThreshold)
+        : 0;
+    LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP from quest turn-in. Total: {}, remaining to next reward: {}",
+        player->GetName().c_str(), OnQuestTurnInXp, pData->RewardXP, remaining);
+
+    TryGrantReward(player, pData);
+}
+
+void TwistedMgr::OnPlayerLevelChanged(Player* player, uint8 oldLevel)
+{
+    TwistedPlayerData* pData = GetOrFindPlayerData(player->GetGUID());
+    if (!pData)
+        return;
+
+    uint8 newLevel = player->GetLevel();
+    if (newLevel > oldLevel)
+    {
+        uint32 gainedXP = LevelUpXP * (newLevel - oldLevel);
+        pData->RewardXP += gainedXP;
+
+        uint32 remaining = RewardGrantThreshold > 0
+            ? RewardGrantThreshold - (pData->RewardXP % RewardGrantThreshold)
+            : 0;
+        LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP from level-up. Total: {}, remaining to next reward: {}",
+            player->GetName().c_str(), gainedXP, pData->RewardXP, remaining);
+
+        TryGrantReward(player, pData);
+    }
 }
 
 TwistedPlayerData* TwistedMgr::GetOrFindPlayerData(ObjectGuid guid)
