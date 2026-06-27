@@ -10,5 +10,5 @@ INSERT INTO `item_loot_template` VALUES (60046,5013,0,8,0,1,0,1,1,'Treasure Box 
 
 DELETE FROM `reference_loot_template` WHERE `entry` BETWEEN 2222000 AND 2223000;
 
-INSERT INTO `item_loot_template` VALUES (2222000,60044,0,50,0,1,0,1,1,'lvl 1 - Weapon Twist');
-INSERT INTO `item_loot_template` VALUES (2222000,60045,0,50,0,1,0,1,1,'lvl 1 - Armor Twist');
+INSERT INTO `reference_loot_template` VALUES (2222000,60044,0,50,0,1,0,1,1,'lvl 1 - Weapon Twist');
+INSERT INTO `reference_loot_template` VALUES (2222000,60045,0,50,0,1,0,1,1,'lvl 1 - Armor Twist');
