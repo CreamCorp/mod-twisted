@@ -1,5 +1,15 @@
 [worldserver]
 
+###################################################################################################
+# LOGGING
+#
+# Add these lines to your worldserver.conf file to enable logging for DungeonScale.
+# Be sure to add them after the `Logger.module=4,Console Server` line.
+# 	4 = Info (Default), 5 = Debug
+###################################################################################################
+
+# Logger.twisted=4,Console Server
+
 ########################################
 # Treasure Find
 ########################################

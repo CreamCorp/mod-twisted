@@ -90,8 +90,10 @@ void TwistedConfig::LoadRewardDefinitions()
         DefData.EntryId = sConfigMgr->GetOption<uint32>(sb.str(), 0);
         if (DefData.EntryId == 0)
         {
-            LOG_ERROR("module", "Mod-Twisted conf string [{}] had no item entry for Def {}!", sb.str().c_str(), Def);
+            LOG_ERROR("twisted", "Conf string [{}] had no item entry for Def {}!", sb.str().c_str(), Def);
         }
+        
+        sLog->SetLogLevel("Twisted", LogLevel::LOG_LEVEL_DISABLED);
 
         CLR_STREAM(sb)
         sb << BaseConfStr << Def << ".MinLevel";
@@ -119,7 +121,7 @@ void TwistedConfig::LoadImbueEnchantmentTiers()
         ParseConfStringList<uint32>(TierData.ItemIds, sConfigMgr->GetOption<std::string>(sb.str(), ""));
         if (TierData.ItemIds.size() <= 0)
         {
-            LOG_ERROR("Mod-Twisted conf string [{}] had no source items for Tier {}!", sb.str(), Tier);
+            LOG_ERROR("twisted", "Conf string [{}] had no source items for Tier {}!", sb.str(), Tier);
         }
 
         CLR_STREAM(sb)
@@ -127,7 +129,7 @@ void TwistedConfig::LoadImbueEnchantmentTiers()
         ParseConfStringList<uint32>(TierData.EnchantIds, sConfigMgr->GetOption<std::string>(sb.str(), ""));
         if (TierData.EnchantIds.size() <= 0)
         {
-            LOG_ERROR("Mod-Twisted conf string [{}] had no enchant ids for Tier {}!", sb.str(), Tier);
+            LOG_ERROR("twisted", "Conf string [{}] had no enchant ids for Tier {}!", sb.str(), Tier);
         }
         sTwistedMgr->EnchantmentTiers.push_back(TierData);
     };

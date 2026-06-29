@@ -51,23 +51,23 @@ Twisted.FEATURENAME.VARIABLENAME
 
 ### Logging Rules
 - Use `LOG_INFO`, `LOG_WARN`, or `LOG_ERROR` only. No `printf`, no `std::cout`.
-- Always use `"module"` as the first argument (the log filter).
+- Always use `"twisted"` as the first argument (the log filter).
 - Format arguments with `{}` placeholders — never `%s` / `%d` / `%u`.
 
 ```cpp
 // Correct
-LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP.", player->GetName(), gainedXP);
-LOG_WARN("module", "Mod-Twisted: No RewardDefinition found for player {} at level {}.", player->GetName(), player->GetLevel());
-LOG_ERROR("module", "Mod-Twisted: Config key [{}] missing for Def {}!", sb.str(), Def);
+LOG_INFO("twisted", "Player {} gained {} RewardXP.", player->GetName(), gainedXP);
+LOG_WARN("twisted", "No RewardDefinition found for player {} at level {}.", player->GetName(), player->GetLevel());
+LOG_ERROR("twisted", "Config key [{}] missing for Def {}!", sb.str(), Def);
 
 // Wrong — do not use
-LOG_INFO("module", "Player %s gained %u XP", player->GetName().c_str(), gainedXP);
+LOG_INFO("twisted", "Player %s gained %u XP", player->GetName().c_str(), gainedXP);
 ```
 
 - Verbose `LOG_INFO` calls (e.g., per-kill XP logging) must be guarded by the feature's `LogVerbose` flag:
 ```cpp
 if (sTwistedMgr->RewardsLogVerbose)
-    LOG_INFO("module", "Mod-Twisted: ...");
+    LOG_INFO("twisted", "...");
 ```
 
 ### `TwistedMgr` Field Grouping
