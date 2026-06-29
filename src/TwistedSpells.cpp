@@ -26,14 +26,12 @@ class TreasureFindSpell : public AuraScript
     {
         const int32 Amount = aurEff->GetAmount();
         sTwistedMgr->ModifyTreasureFind(GetCasterGUID(), Amount);
-        //LOG_INFO("Twisted", "Applying TreasureFind -> +{} (Base {})", Amount);
     }
 
     void HandleOnEffectRemove(AuraEffect const* aurEff, AuraEffectHandleModes /* mode */)
     {
         const int32 Amount = aurEff->GetAmount();
         sTwistedMgr->ModifyTreasureFind(GetCasterGUID(), -Amount);
-        //LOG_INFO("Twisted", "Removing TreasureFind -> -{} (Base {})", Amount);
     }
 
     void Register() override
@@ -121,6 +119,8 @@ class ImbueItemSpell : public SpellScript
         if (!pEnchant)
             return;
 
+        LOG_INFO("Twisted", "Twisting item {} with enchant {} (Current: {})",
+            TargetItem->GetTemplate()->ItemId, EnchantId, CurrentEnchantId);
         ApplyEnchantment(TargetItem, ItemOwner, EnchantId);
     }
 

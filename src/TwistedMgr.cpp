@@ -110,13 +110,13 @@ void TwistedMgr::TryGrantReward(Player* player, TwistedPlayerData* pData)
 
         if (!FoundDef)
         {
-            LOG_WARN("module", "Mod-Twisted: No RewardDefinition found for player {} at level {} — skipping grant.",
+            LOG_WARN("Twisted", "Mod-Twisted: No RewardDefinition found for player {} at level {} — skipping grant.",
                 player->GetName().c_str(), player->GetLevel());
             continue;
         }
 
         ItemPosCountVec dest;
-        InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, FoundDef->EntryId, 1);
+        const InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, FoundDef->EntryId, 1);
         if (msg == EQUIP_ERR_OK)
         {
             Item* item = player->StoreNewItem(dest, FoundDef->EntryId, true);
@@ -161,10 +161,10 @@ void TwistedMgr::OnPlayerCreatureKill(Player* player, Creature* killed)
         pData->RewardXP += gainedXP;
     }
 
-    uint32 remaining = RewardGrantThreshold > 0
+    const uint32 remaining = RewardGrantThreshold > 0
         ? RewardGrantThreshold - (pData->RewardXP % RewardGrantThreshold)
         : 0;
-    LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP from creature kill. Total: {}, remaining to next reward: {}",
+    LOG_INFO("Twisted", "Mod-Twisted: Player {} gained {} RewardXP from creature kill. Total: {}, remaining to next reward: {}",
         player->GetName().c_str(), gainedXP, pData->RewardXP, remaining);
 
     TryGrantReward(player, pData);
@@ -178,10 +178,10 @@ void TwistedMgr::OnPlayerCompleteQuest(Player* player, Quest const* /*quest*/)
 
     pData->RewardXP += OnQuestTurnInXp;
 
-    uint32 remaining = RewardGrantThreshold > 0
+    const uint32 remaining = RewardGrantThreshold > 0
         ? RewardGrantThreshold - (pData->RewardXP % RewardGrantThreshold)
         : 0;
-    LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP from quest turn-in. Total: {}, remaining to next reward: {}",
+    LOG_INFO("Twisted", "Mod-Twisted: Player {} gained {} RewardXP from quest turn-in. Total: {}, remaining to next reward: {}",
         player->GetName().c_str(), OnQuestTurnInXp, pData->RewardXP, remaining);
 
     TryGrantReward(player, pData);
@@ -193,16 +193,16 @@ void TwistedMgr::OnPlayerLevelChanged(Player* player, uint8 oldLevel)
     if (!pData)
         return;
 
-    uint8 newLevel = player->GetLevel();
+    const uint8 newLevel = player->GetLevel();
     if (newLevel > oldLevel)
     {
-        uint32 gainedXP = LevelUpXP * (newLevel - oldLevel);
+        const uint32 gainedXP = LevelUpXP * (newLevel - oldLevel);
         pData->RewardXP += gainedXP;
 
-        uint32 remaining = RewardGrantThreshold > 0
+        const uint32 remaining = RewardGrantThreshold > 0
             ? RewardGrantThreshold - (pData->RewardXP % RewardGrantThreshold)
             : 0;
-        LOG_INFO("module", "Mod-Twisted: Player {} gained {} RewardXP from level-up. Total: {}, remaining to next reward: {}",
+        LOG_INFO("Twisted", "Mod-Twisted: Player {} gained {} RewardXP from level-up. Total: {}, remaining to next reward: {}",
             player->GetName().c_str(), gainedXP, pData->RewardXP, remaining);
 
         TryGrantReward(player, pData);

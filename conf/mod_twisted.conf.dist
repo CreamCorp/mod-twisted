@@ -4,7 +4,7 @@
 # Treasure Find
 ########################################
 #
-#    TwistedItems.Treasures.Enable
+#    Twisted.Treasures.Enable
 #        Description: Enable the Treasure Find system
 #        Default:     0 - Disabled
 #                     1 - Enabled
@@ -13,10 +13,32 @@
 Twisted.Treasures.Enable = 1
 
 ########################################
+# Rewards
+########################################
+#
+#    Twisted.Rewards.Enable
+#        Description: Enable the Treasure Find system
+#        Default:     0 - Disabled
+#                     1 - Enabled
+#
+
+Twisted.Rewards.Enable = 1
+Twisted.Rewards.StartingRewardXP = 0
+Twisted.Rewards.RewardGrantThreshold = 10000
+Twisted.Rewards.LevelUpXP = 6000
+Twisted.Rewards.OnCreatureKillInLevelRangeXP = 100
+Twisted.Rewards.OnCreatureKillAnyLevelXP = 25
+Twisted.Rewards.OnQuestTurnInXp = 2350
+Twisted.Rewards.NumDefs = 1
+Twisted.Rewards.Def1.RewardItemId = 60046
+Twisted.Rewards.Def1.MinLevel = 1
+Twisted.Rewards.Def1.MaxLevel = 9
+
+########################################
 # Item Imbue
 ########################################
 #
-#    TwistedItems.ItemImbue.Enable
+#    Twisted.ItemImbue.Enable
 #        Description: Enable the Item Imbue system
 #        Default:     0 - Disabled
 #                     1 - Enabled
