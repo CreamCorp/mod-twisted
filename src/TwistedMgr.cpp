@@ -63,6 +63,16 @@ void TwistedMgr::ModifyTreasureFind(ObjectGuid guid, const int32& Points)
     }
 }
 
+int32 TwistedMgr::GetTreasureFindValue(ObjectGuid guid)
+{
+    if (const TwistedPlayerData* pData = GetOrFindPlayerData(guid))
+    {
+        return pData->TreasureFindPoints;
+    }
+
+    return 0;
+}
+
 const ItemImbueTierData* TwistedMgr::GetItemImbueTier(uint32 ItemId, int32& outIndex)
 {
     outIndex = 0;

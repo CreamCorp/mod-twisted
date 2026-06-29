@@ -11,18 +11,6 @@
 # Logger.twisted=4,Console Server
 
 ########################################
-# Treasure Find
-########################################
-#
-#    Twisted.Treasures.Enable
-#        Description: Enable the Treasure Find system
-#        Default:     0 - Disabled
-#                     1 - Enabled
-#
-
-Twisted.Treasures.Enable = 1
-
-########################################
 # Rewards
 ########################################
 #

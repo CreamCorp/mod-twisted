@@ -55,6 +55,7 @@ public:
 
     bool GetTreasureFindEnabled() const { return TreasureFindEnabled; }
     void ModifyTreasureFind(ObjectGuid guid, const int32& Points);
+    int32 GetTreasureFindValue(ObjectGuid guid);
 
     bool GetItemImbueEnabled() const { return ItemImbueEnabled; }
     uint32 GetNumItemImbueTiers() const { return NumItemImbueTiers; }
