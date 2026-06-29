@@ -71,6 +71,7 @@ public:
     void OnPlayerCreatureKill(Player* player, Creature* killed);
     void OnPlayerCompleteQuest(Player* player, Quest const* quest);
     void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
+    uint32 RollForTreasureFind(Player* player);
 
 private:
     TwistedPlayerData* GetOrFindPlayerData(ObjectGuid guid);

@@ -6,6 +6,7 @@
 #include "TwistedConfig.h"
 #include "TwistedSpells.h"
 #include "TwistedPlayer.h"
+#include "TwistedTreasures.h"
 #include <MapMgr.h>
 #include "Creature.h"
 #include "DatabaseEnv.h"
@@ -13,6 +14,7 @@
 #include "Mail.h"
 #include "ObjectMgr.h"
 #include "QuestDef.h"
+#include "Random.h"
 
 TwistedMgr* TwistedMgr::Get()
 {
@@ -219,6 +221,53 @@ void TwistedMgr::OnPlayerLevelChanged(Player* player, uint8 oldLevel)
     }
 }
 
+uint32 TwistedMgr::RollForTreasureFind(Player* player)
+{
+    const uint8 playerLevel = player->GetLevel();
+    const int32 treasureFindValue = GetTreasureFindValue(player->GetGUID());
+
+    uint32 successfulRolls = 0;
+    int32 remainingValue = treasureFindValue;
+
+    while (remainingValue > 0)
+    {
+        const int32 rollValue = std::min(remainingValue, 100);
+        remainingValue -= rollValue;
+
+        float levelMultiplier = 1.0f;
+        if (playerLevel <= 10)
+        {
+            levelMultiplier = 8.0f - (playerLevel - 1) * 0.2f;
+        }
+        else if (playerLevel <= 20)
+        {
+            levelMultiplier = 6.0f - (playerLevel - 11) * 0.3f;
+        }
+        else if (playerLevel <= 30)
+        {
+            levelMultiplier = 3.0f - (playerLevel - 21) * 0.15f;
+        }
+        else if (playerLevel <= 40)
+        {
+            levelMultiplier = 1.5f - (playerLevel - 31) * 0.05f;
+        }
+        else
+        {
+            levelMultiplier = 1.0f;
+        }
+
+        const float scaledValue = rollValue * levelMultiplier;
+        const float effectiveTreasureFind = scaledValue * 0.25f;
+
+        if (urand(0, 100) < effectiveTreasureFind)
+        {
+            successfulRolls++;
+        }
+    }
+
+    return successfulRolls;
+}
+
 TwistedPlayerData* TwistedMgr::GetOrFindPlayerData(ObjectGuid guid)
 {
     auto entry = PlayerData.find(guid);
@@ -235,6 +284,8 @@ void AddTwistedScripts()
 {
     new TwistedConfig();
     new TwistedPlayer();
+    new TwistedTreasuresWorldScript();
+    new TwistedTreasuresMiscScript();
 
     AddTwistedSpellScripts();
 }

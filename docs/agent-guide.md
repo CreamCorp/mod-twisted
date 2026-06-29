@@ -37,6 +37,26 @@ Defined at the top of `TwistedConfig.cpp`. Use it for all scalar config reads.
 - Use `auto` for type deduction when the type is obvious from the context.
 - Use `nullptr` instead of `NULL`.
 
+### Const Correctness for Local Variables
+
+Local variables that are initialized once and never modified must be declared `const`:
+
+```cpp
+// Correct
+const uint32 averageItemLevel = totalItemLevel / equippedCount;
+const uint32 targetItemLevel = averageItemLevel + urand(1, 5);
+const uint32 randomIndex = urand(0, candidateEntries.size() - 1);
+const uint32 selectedEntry = candidateEntries[randomIndex];
+
+// Wrong — do not use
+uint32 averageItemLevel = totalItemLevel / equippedCount;
+uint32 targetItemLevel = averageItemLevel + urand(1, 5);
+uint32 randomIndex = urand(0, candidateEntries.size() - 1);
+uint32 selectedEntry = candidateEntries[randomIndex];
+```
+
+Only omit `const` when the variable is intentionally modified after initialization (e.g., counters, accumulators).
+
 ## Conventions
 
 ### Config Key Naming
