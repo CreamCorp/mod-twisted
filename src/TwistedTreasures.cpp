@@ -21,29 +21,87 @@ public:
     {
     }
 
-    void OnStartup() override
+    void ProcessResults(QueryResult& result)
     {
-        // This query populates 'random suffix / enchant' items from ilevel 10 onwards.
-        // We should craft a second query to fill ilevels 1 to 10.
-        QueryResult result = WorldDatabase.Query(
-            "SELECT ItemLevel, Entry FROM item_template WHERE RequiredLevel > 0 AND RequiredSkill = 0 AND (RandomProperty != 0 OR RandomSuffix != 0) ORDER BY ItemLevel asc");
-
         if (result)
         {
             do
             {
-                Field* fields = result->Fetch();
-                uint32 itemLevel = fields[0].Get<uint32>();
-                uint32 entry = fields[1].Get<uint32>();
+                const Field* fields = result->Fetch();
+                const uint32 itemLevel = fields[0].Get<uint32>();
+                const uint32 entry = fields[1].Get<uint32>();
                 ArmorUpgradeMap.emplace(itemLevel, entry);
             } while (result->NextRow());
 
             LOG_INFO("twisted", "Mod-Twisted: Loaded {} items into ArmorUpgradeMap", ArmorUpgradeMap.size());
         }
-        else
-        {
-            LOG_WARN("twisted", "Mod-Twisted: No items found for ArmorUpgradeMap");
-        }
+    }
+
+    void LoadRandomItems()
+    {
+        // All items that have random enchants or properties, most of our loot pools
+        QueryResult result = WorldDatabase.Query(
+            "SELECT ItemLevel, Entry FROM item_template WHERE RequiredLevel > 0 AND RequiredSkill = 0 AND (RandomProperty != 0 OR RandomSuffix != 0) ORDER BY ItemLevel asc");
+
+        ProcessResults(result);
+    }
+
+    void LoadEarlyGameItems()
+    {
+        // Filling out ilvls 10 to 20 mostly
+        QueryResult result = WorldDatabase.Query(
+            "SELECT ItemLevel, Entry FROM item_template AS i \
+                WHERE ItemLevel > 2 AND ItemLevel < 20 AND Quality = 2 AND (Class = 2 OR Class = 4) \
+                AND Name NOT LIKE '%test%' AND Name NOT LIKE '%rank%' AND Name NOT LIKE '%old%'  \
+                AND NOT EXISTS( \
+                    SELECT 1 \
+                    FROM quest_template AS q \
+                    WHERE i.Entry IN( \
+                        q.RewardItem1, \
+                        q.RewardItem2, \
+                        q.RewardItem3, \
+                        q.RewardItem4 \
+                    ) \
+                ) ORDER BY ItemLevel Asc; ");
+
+        ProcessResults(result);
+    }
+
+    void LoadLowChanceWorldDrops()
+    {
+        // Smattering of blues and 18 epics across ilvl 20 to 60 from world drops with low chances. Fun finds.
+        // We keep this capped at ilevel 60 because then we start getting into tier sets and pvp gear.
+        QueryResult result = WorldDatabase.Query(
+            "SELECT ItemLevel, Entry, Name from acore_world.item_template AS i \
+                WHERE ItemLevel > 10 AND ItemLevel < 60 \
+                AND (Quality = 3 OR Quality = 4) \
+                AND (Class = 2 OR Class = 4) \
+                AND NOT EXISTS( \
+                    SELECT 1 \
+                    FROM quest_template AS q \
+                    WHERE i.Entry IN( \
+                        q.RewardItem1, \
+                        q.RewardItem2, \
+                        q.RewardItem3, \
+                        q.RewardItem4 \
+                    ) \
+                ) AND EXISTS( \
+                    SELECT 1 \
+                    FROM creature_loot_template AS c \
+                    WHERE c.Entry = i.Entry AND Chance < 5 \
+                ) ORDER BY ItemLevel Asc;");
+
+        ProcessResults(result);
+    }
+
+    void OnStartup() override
+    {
+        LoadEarlyGameItems();
+        LoadRandomItems();
+        LoadLowChanceWorldDrops();
+        // With the above, we fill out a bunch of neat stuff to find on your journey to level 60.
+        // Items with random properties will still continue to 80, but we need to find more appropriate queries
+        // to fill out more special finds from 60 to 80 that aren't just raid loot.. for another time.
     }
 };
 
