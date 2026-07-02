@@ -104,8 +104,17 @@ class ImbueItemSpell : public SpellScript
         }
         else if (bCanUpgrade && UseNextTier())
         {
+            const ItemImbueTierData* LastTier = TierData;
             TierData = sTwistedMgr->GetItemImbueTier(TierIndex + 1);
-            List = &TierData->EnchantIds;
+            if (TierData)
+            {
+                List = &TierData->EnchantIds;
+            }
+            else
+            {
+                LOG_WARN("Twisted", "Twisted Item: No tier for {}, reverting", TierIndex + 1);
+                TierData = LastTier;
+            }
         }
 
         uint32 EnchantId = GetEnchantment(*List);
@@ -117,7 +126,10 @@ class ImbueItemSpell : public SpellScript
 
         SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(EnchantId);
         if (!pEnchant)
+        {
+            LOG_WARN("Twisted", "Twisted Item: No item enchant entry for {}", EnchantId);
             return;
+        }
 
         LOG_INFO("Twisted", "Twisting item {} with enchant {} (Current: {})",
             TargetItem->GetTemplate()->ItemId, EnchantId, CurrentEnchantId);

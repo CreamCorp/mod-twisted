@@ -18,6 +18,8 @@ TwistedTreasuresWorldScript::TwistedTreasuresWorldScript() : WorldScript("Twiste
 
 void TwistedTreasuresWorldScript::OnStartup()
 {
+    // This query populates 'random suffix / enchant' items from ilevel 10 onwards.
+    // We should craft a second query to fill ilevels 1 to 10.
     QueryResult result = WorldDatabase.Query(
         "SELECT ItemLevel, Entry FROM item_template WHERE RequiredLevel > 0 AND RequiredSkill = 0 AND (RandomProperty != 0 OR RandomSuffix != 0) ORDER BY ItemLevel asc");
 
@@ -58,6 +60,9 @@ void TwistedTreasuresMiscScript::OnAfterLootTemplateProcess(Loot* loot, LootTemp
     if (numRewards == 0)
         return;
 
+    LOG_INFO("twisted", "TreasureFind: Player {} to gain {} rewards.",
+        lootOwner->GetName().c_str(), numRewards);
+
     uint32 totalItemLevel = 0;
     uint32 equippedCount = 0;
 
@@ -88,6 +93,9 @@ void TwistedTreasuresMiscScript::OnAfterLootTemplateProcess(Loot* loot, LootTemp
     {
         candidateEntries.push_back(it->second);
     }
+
+    LOG_INFO("twisted", "TreasureFind: - Average ilevel {}, target level {} (max {}), num candidates = {}",
+        averageItemLevel, targetItemLevel, maxItemLevelKey, candidateEntries.size());
 
     if (candidateEntries.empty())
         return;
@@ -125,6 +133,8 @@ void TwistedTreasuresMiscScript::OnAfterLootTemplateProcess(Loot* loot, LootTemp
         ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(selectedEntry);
         if (!itemProto)
             continue;
+
+        LOG_INFO("twisted", "TreasureFind: - Adding reward entry {}", selectedEntry);
 
         const LootStoreItem selectedItem(selectedEntry, 0, 100.0f, false, LOOT_MODE_DEFAULT, 0, 1, 1);
         loot->AddItem(selectedItem);

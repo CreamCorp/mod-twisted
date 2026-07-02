@@ -258,8 +258,11 @@ uint32 TwistedMgr::RollForTreasureFind(Player* player)
 
         const float scaledValue = rollValue * levelMultiplier;
         const float effectiveTreasureFind = scaledValue * 0.25f;
+        const float RandChanceVal = frand(0.0f, 99.0f) + 1.f;
 
-        if (urand(0, 100) < effectiveTreasureFind)
+        LOG_INFO("twisted", "TreasureFind: {} rolling {} against {} eTF.",
+            player->GetName().c_str(), RandChanceVal, effectiveTreasureFind);
+        if (RandChanceVal < effectiveTreasureFind)
         {
             successfulRolls++;
         }
