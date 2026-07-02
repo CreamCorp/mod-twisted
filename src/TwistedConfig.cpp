@@ -93,7 +93,7 @@ void TwistedConfig::LoadRewardDefinitions()
             LOG_ERROR("twisted", "Conf string [{}] had no item entry for Def {}!", sb.str().c_str(), Def);
         }
         
-        sLog->SetLogLevel("Twisted", LogLevel::LOG_LEVEL_DISABLED);
+        sLog->SetLogLevel("twisted", LogLevel::LOG_LEVEL_DISABLED);
 
         CLR_STREAM(sb)
         sb << BaseConfStr << Def << ".MinLevel";

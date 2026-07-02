@@ -52,10 +52,11 @@ class ImbueItemSpell : public SpellScript
         Owner->ApplyEnchantment(Target, PERM_ENCHANTMENT_SLOT, true);
     }
 
-    uint32 GetEnchantment(const std::vector<uint32>& EnchantList)
+    uint32 GetEnchantment(const std::vector<uint32>& EnchantList, uint32& OutIndex)
     {
         const uint32 EnchantIndex = urand(0, EnchantList.size());
         const uint32 EnchantId = EnchantList[EnchantIndex];
+        OutIndex = EnchantIndex;
         return EnchantId;
     }
 
@@ -112,26 +113,29 @@ class ImbueItemSpell : public SpellScript
             }
             else
             {
-                LOG_WARN("Twisted", "Twisted Item: No tier for {}, reverting", TierIndex + 1);
+                LOG_WARN("twisted", "Twisted Item: No tier for {}, reverting", TierIndex + 1);
                 TierData = LastTier;
             }
         }
 
-        uint32 EnchantId = GetEnchantment(*List);
+        uint32 ListIndex = 0;
+        uint32 EnchantId = GetEnchantment(*List, ListIndex);
         const uint32 CurrentEnchantId = TargetItem->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
         if (EnchantId == CurrentEnchantId)
         {
-            EnchantId = (EnchantId + 1) % List->size();
+            ListIndex = (ListIndex + 1) % List->size();
+            EnchantId = (*List)[ListIndex];
+            LOG_INFO("twisted", "Twisted Item: Grabbing new enchant, player already had.");
         }
 
         SpellItemEnchantmentEntry const* pEnchant = sSpellItemEnchantmentStore.LookupEntry(EnchantId);
         if (!pEnchant)
         {
-            LOG_WARN("Twisted", "Twisted Item: No item enchant entry for {}", EnchantId);
+            LOG_WARN("twisted", "Twisted Item: No item enchant entry for {}", EnchantId);
             return;
         }
 
-        LOG_INFO("Twisted", "Twisting item {} with enchant {} (Current: {})",
+        LOG_INFO("twisted", "Twisting item {} with enchant {} (Current: {})",
             TargetItem->GetTemplate()->ItemId, EnchantId, CurrentEnchantId);
         ApplyEnchantment(TargetItem, ItemOwner, EnchantId);
     }
