@@ -287,8 +287,8 @@ void AddTwistedScripts()
 {
     new TwistedConfig();
     new TwistedPlayer();
-    new TwistedTreasuresWorldScript();
-    new TwistedTreasuresMiscScript();
+    
 
     AddTwistedSpellScripts();
+    AddTwistedTreasureScripts();
 }
