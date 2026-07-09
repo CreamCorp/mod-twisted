@@ -8,3 +8,6 @@ INSERT INTO `spellitemenchantment_dbc` VALUES (3898,0,3,0,0,0,0,0,0,0,0,90004,0,
 INSERT INTO `spellitemenchantment_dbc` VALUES (3899,0,3,0,0,0,0,0,0,0,0,90005,0,0,'+1% Experience from kills and quests.','','','','','','','','','','','','','','','',16712190,0,0,60040,0,0,0,0);
 INSERT INTO `spellitemenchantment_dbc` VALUES (3900,0,3,0,0,100,0,0,100,0,0,90007,0,0,'Lifeburst 1','','','','','','','','','','','','','','','',16712190,0,9,0,0,0,0,0);
 INSERT INTO `spellitemenchantment_dbc` VALUES (3901,0,3,0,0,100,0,0,100,0,0,90010,0,0,'Thunderburst 1','','','','','','','','','','','','','','','',16712190,0,9,0,0,0,0,0);
+INSERT INTO `spellitemenchantment_dbc` VALUES (3902,0,3,0,0,0,0,0,0,0,0,90019,0,0,'+2% Chance to find special items.','','','','','','','','','','','','','','','',16712190,0,0,60037,0,0,0,0);
+INSERT INTO `spellitemenchantment_dbc` VALUES (3903,0,3,0,0,0,0,0,0,0,0,90020,0,0,'+3% Chance to find special items.','','','','','','','','','','','','','','','',16712190,0,0,60037,0,0,0,0);
+

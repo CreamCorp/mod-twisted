@@ -71,4 +71,4 @@ Twisted.ItemImbue.WeaponUniqueEnchantIds = 864,1763,2828,2834,3102,3643
 Twisted.ItemImbue.TierUpgradeChance = 10.0
 Twisted.ItemImbue.NumTiers = 1
 Twisted.ItemImbue.Tier1.ItemIds = 60044,60045
-Twisted.ItemImbue.Tier1.EnchantIds = 847,911,1583,2857,3894,3899
+Twisted.ItemImbue.Tier1.EnchantIds = 847,911,1583,2857,3894,3899,3902,3903
